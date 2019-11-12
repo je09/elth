@@ -1,20 +1,16 @@
 from django.db import models
 
 class Group(models.Model):
-    group_name = models.CharField(blank=False, default='Group Name', max_length=100)
-    date_updated = models.DateTimeField(blank=False)
+    group_id = models.IntegerField(blank=False, default=0)
+    date_updated = models.DateTimeField(blank=False, auto_now=True)
 
     def __str__(self):
-        return self.group_name
+        return str(self.group_id)
 
-class Teacher_Name(models.Model):
-    name = models.CharField(blank=False, default='Teacher Name', max_length=100)
-
-    def __str__(self):
-        return self.name
 
 class Lesson_Name(models.Model):
     lesson_name = models.CharField(blank=False, default='Lesson Name', max_length=100)
+    date_updated = models.DateTimeField(blank=False, auto_now=True)
 
     def __str__(self):
         return self.lesson_name
@@ -42,12 +38,15 @@ class Lesson(models.Model):
     group = models.ForeignKey(Group, null=True, on_delete=models.SET_NULL)
     time = models.ForeignKey(Lesson_Timing, null=True, on_delete=models.SET_NULL)
     name = models.ForeignKey(Lesson_Name, null=True, on_delete=models.SET_NULL)
+    teacher_name = models.CharField(blank=False, default="Teacher name", max_length=40)
     number = models.IntegerField(blank=False)
     audience = models.CharField(blank=False, max_length=50)
+    date_updated = models.DateTimeField(blank=False, auto_now=True)
 
 class Student(models.Model):
-    student_id = models.IntegerField(blank=False, default=0, max_length=6, primary_key=True)
-    group_name = models.ForeignKey(Group, null=True, on_delete=models.SET_NULL)
+    student_id = models.IntegerField(blank=False, default=0, primary_key=True)
+    group = models.ForeignKey(Group, null=True, on_delete=models.SET_NULL)
+    date_updated = models.DateTimeField(blank=False, auto_now=True)
 
     def __str__(self):
-        return self.student_id
+        return str(self.student_id)

@@ -8,16 +8,17 @@ https://docs.djangoproject.com/en/1.11/topics/settings/
 
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
+
+***
+Project named after the Eleventh from Stranger Things
+Because I think that ETIS is something like an Upside Down
+And this project is talking to the creatures from the Upside Down, so...
+And it sound cool, after all
 """
 
 import os
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'myrf$3cg)e!)5+6)6xs#hf#ezlww02^$#=_o5w%s4kwqk%lk*3'
@@ -25,8 +26,7 @@ SECRET_KEY = 'myrf$3cg)e!)5+6)6xs#hf#ezlww02^$#=_o5w%s4kwqk%lk*3'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*'] # HACK!
-
+ALLOWED_HOSTS = ['*'] # TODO: Fix it later! Don't forget!
 
 # Application definition
 
@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'elth.schedule',
+    'schedule',
 ]
 
 MIDDLEWARE = [
