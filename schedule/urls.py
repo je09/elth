@@ -19,4 +19,9 @@ from . import views
 
 urlpatterns = [
     path('parse/<str:session_id>/', views.parse_session, name='Parse a session'),
+    path('student_info/<str:session_id>/<str:api_key>', views.return_student_info, name='Student info'),
+    path('week_schedule/<str:session_id>/<str:api_key>/<int:week>', views.return_schedule_week, name='Schedule for a week'),
+    path('week_schedule_formated/<str:session_id>/<str:api_key>/<int:week>', views.return_schedule_week_formated, name='Schedule for a week'),
+    path('week_periods/<str:session_id>/<str:api_key>/', views.return_week_period, name='Period for a week'),
+    path('marks/<str:session_id>/<str:api_key>/<int:trimester>', views.return_week_period, name='Marks of the given trimester'),
 ]
