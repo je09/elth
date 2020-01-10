@@ -195,17 +195,17 @@ class EtisScheduleParser:
             path='/'
         )
 
-        if not self.__session_check__():
+        self.r = self.__etis_request__()  # HACK: Looks like a bad practice
+
+        if not self.__session_check__(r):
             raise ValueError('Wrong session id')
 
-        self.first_week = self.__get_first_week__()
-        self.max_week = self.__parse_week_number__()
-        self.__create_student__()
+        self.first_week, self.max_week = self.__parse_week_number__(r)
+        self.r = self.__etis_request__(self.schedule_url.format(self.first_week))  # HACK: Looks like a bad practice
+        self.__create_student__(r)
 
-    def __session_check__(self):
+    def __session_check__(self, r):
         result = True
-
-        r = self.__etis_request__()
 
         if '<form action="https://student.psu.ru/pls/stu_cus_et/stu.login" method="post" id="form">' in r.text:
             # Looks like a DIRTY HACK
@@ -213,19 +213,13 @@ class EtisScheduleParser:
 
         return result
 
-    def __parse_week_number__(self):
+    def __parse_week_number__(self, r):
         r = self.__etis_request__()
         soup = BeautifulSoup(r.text, "lxml") # Doesn't work with a standard parser
-        number = soup.find_all('li', {'class': 'week'})[-1].text.strip()
+        number_first = soup.find_all('li', {'class': 'week'})[0].text.strip()
+        number_max = soup.find_all('li', {'class': 'week'})[-1].text.strip()
 
-        return int(number)
-
-    def __get_first_week__(self):
-        r = self.__etis_request__()
-        soup = BeautifulSoup(r.text, "lxml")
-        number = soup.find_all('li', {'class': 'week'})[0].text.strip()
-
-        return int(number)
+        return int(number_first), int(number_max)
 
     def __etis_request__(self, url=None):
         if url is None:
@@ -239,8 +233,7 @@ class EtisScheduleParser:
 
         return r
 
-    def __create_student__(self):
-        r = self.__etis_request__(self.schedule_url.format(self.first_week))  # HACK: Looks like a bad practice
+    def __create_student__(self, r):
         soup = BeautifulSoup(r.content, "lxml")
 
         try:
@@ -318,10 +311,12 @@ class EtisScheduleParser:
             self.__parse_week_period__(week)
 
     def get_student_info(self):
-        r = self.__etis_request__(self.end_point.format('stu.teach_plan'))
+        r = self.r
         soup = BeautifulSoup(r.text, "lxml")
 
-        return soup.find('div', {'class': 'span12'}).text
+        return soup.find('div', {'class': 'span12'}).text, soup.find(
+            'div', {'class' : 'span3'}
+        ).text.strip('Пропущенные занятия')
 
 class EtisTool:
     """
@@ -346,14 +341,20 @@ class EtisTool:
             self.parser.parse_week(week)
 
     def student_info(self):
-        student_info = self.parser.get_student_info().split('\n') # FUCKING DISGUSTING DIRTY HACK!!!
+        student_info = self.parser.get_student_info()[0].split('\n') # FUCKING DISGUSTING DIRTY HACK!!!
+        try:
+            missing_classes = int(self.parser.get_student_info()[1])
+        except ValueError:
+            missing_classes = 0
+
         result = {
             'student_id' : int(self.parser.student.student_id),
             'student_group_id' : self.parser.student.group,
             'student_group_name' : student_info[2].strip(),
             'student_name' : student_info[1].strip(),
             'student_year' : int(student_info[4].strip()),
-            'student_type' : student_info[3].strip()
+            'student_type' : student_info[3].strip(),
+            'missing_classes' : missing_classes
         }
 
         return result

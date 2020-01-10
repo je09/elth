@@ -21,7 +21,6 @@ class Week_Period(models.Model):
     period_start = models.DateField(blank=False)
     period_end = models.DateField(blank=False)
 
-
 class Lesson_Timing(models.Model):
     start = models.TimeField(blank=False)
     end = models.TimeField(blank=False)
@@ -64,6 +63,22 @@ class Student(models.Model):
 class Mark(models.Model):
     pass
 
+
+class Lesson_Choiced_Name(models.Model):
+    lesson_name = models.CharField(blank=False, default='Lesson Name', max_length=100)
+    date_updated = models.DateTimeField(blank=False, auto_now=True)
+
+    def __str__(self):
+        return self.lesson_name
+
+
+class Lesson_Choiced(models.Model):
+    lesson_name = models.ForeignKey(Lesson_Choiced_Name, null=True, on_delete=models.SET_NULL)
+    student = models.ForeignKey(Student, null=True, on_delete=models.SET_NULL)
+    date_updated = models.DateTimeField(blank=False, auto_now=True)
+
+    def __str__(self):
+        return self.lesson_name
 
 class Duration(models.Model):
     name = models.CharField(blank=False, max_length=50)
