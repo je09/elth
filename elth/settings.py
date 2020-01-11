@@ -26,7 +26,7 @@ SECRET_KEY = 'myrf$3cg)e!)5+6)6xs#hf#ezlww02^$#=_o5w%s4kwqk%lk*3'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*'] # TODO: Fix it later! Don't forget!
+ALLOWED_HOSTS = ['itxtools.xyz', '192.168.1.187', '192.168.1.1', '*'] # TODO: Fix it later! Don't forget!
 
 # Application definition
 

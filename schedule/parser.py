@@ -4,7 +4,7 @@ from string import digits
 import requests
 from bs4 import BeautifulSoup
 
-from .models import Lesson, Lesson_Timing, Lesson_Name, Group, Student, Week_Period
+from .models import Lesson, Lesson_Timing, Lesson_Name, Group, Student, Week_Period, Lesson_Choiced_Name, Lesson_Choiced
 
 # There is need to be some kind of converter
 # from ETIS's text to a short one
@@ -126,6 +126,17 @@ class EtisStudent:
         new_lesson.save()
         del new_lesson
 
+    def update_lessons_choiced(self, discipline, choice):
+        if not self.__lesson_choiced_name__(discipline):
+            new_discipline = Lesson_Choiced_Name(lesson_name=discipline)
+            new_discipline.save()
+            del new_discipline
+
+        if choice and not self.__lesson_choiced__(discipline):
+            new_discipline = Lesson_Choiced(lesson_name=discipline, student=self.student_model)
+            new_discipline.save()
+            del new_discipline
+
 
     def update_week_preiod(self, week, period_start, period_end):
         new_period = Week_Period(
@@ -141,6 +152,11 @@ class EtisStudent:
     def update_marks(self, marks):
         self.marks = marks
 
+    def __lesson_choiced_name__(self, name):
+        return Lesson_Choiced_Name.objects.filter(lesson_name=name).exists()
+
+    def __lesson_choiced__(self, name):
+        return Lesson_Choiced.objects.filter(lesson_name=name, student=self.student_model).exists()
 
     def __group_check__(self, group):
         return Group.objects.filter(group_id=group).exists()
@@ -197,12 +213,12 @@ class EtisScheduleParser:
 
         self.r = self.__etis_request__()  # HACK: Looks like a bad practice
 
-        if not self.__session_check__(r):
+        if not self.__session_check__(self.r):
             raise ValueError('Wrong session id')
 
-        self.first_week, self.max_week = self.__parse_week_number__(r)
+        self.first_week, self.max_week = self.__parse_week_number__(self.r)
         self.r = self.__etis_request__(self.schedule_url.format(self.first_week))  # HACK: Looks like a bad practice
-        self.__create_student__(r)
+        self.__create_student__(self.r)
 
     def __session_check__(self, r):
         result = True
@@ -305,6 +321,15 @@ class EtisScheduleParser:
         period = soup.find('div', {'style': 'margin-top: 5px;text-align:center;'})
         period = period.span.text.strip().split(' по ') # DIRTY FUCKING HACK!
         self.student.update_week_preiod(week_number, remove_all_chars(period[0]), remove_all_chars(period[1]))
+
+    def parse_lessons_choiced(self):
+        r = self.__etis_request__(self.end_point.format('stu.teach_plan?p_mode=choose_dis'))
+        soup = BeautifulSoup(r.text, "lxml")
+
+        table = soup.find('table', {'class': 'common'}).find_all('tr')
+        for item in table[1:]:
+            discipline, _, choice, _ = item.find_all('td')
+            self.student.update_lessons_choiced(discipline, choice)
 
     def parse_every_week_period(self):
         for week in range(self.first_week, self.max_week):
