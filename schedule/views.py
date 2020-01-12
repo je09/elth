@@ -17,10 +17,16 @@ def return_schedule_week(request, session_id, api_key, week):
         'error_code' : 0,
         'error_description' : 'wrong api key'
     }
-    if api_key:
-        etis_tool = EtisTool(session_id)
-        result = etis_tool.return_week(week)
-        result = {'data' : result}
+    try:
+        if api_key:
+            etis_tool = EtisTool(session_id)
+            result = etis_tool.return_week(week)
+            result = {'data' : result}
+    except ValueError:
+        result = {
+            'error_code' : 1,
+            'error_description' : 'wrong session'
+        }
 
     return JsonResponse(result)
 
@@ -29,10 +35,16 @@ def return_schedule_week_formated(request, session_id, api_key, week):
         'error_code' : 0,
         'error_description' : 'wrong api key'
     }
-    if api_key:
-        etis_tool = EtisTool(session_id)
-        result = etis_tool.return_week(week, True)
-        result = {'data' : result}
+    try:
+        if api_key:
+            etis_tool = EtisTool(session_id)
+            result = etis_tool.return_week(week, True)
+            result = {'data' : result}
+    except ValueError:
+        result = {
+            'error_code' : 1,
+            'error_description' : 'wrong session'
+        }
 
     return JsonResponse(result)
 
@@ -42,9 +54,16 @@ def return_student_info(request, session_id, api_key):
         'error_code': 0,
         'error_description': 'wrong api key'
     }
-    if api_key:
-        etis_tool = EtisTool(session_id)
-        result = etis_tool.student_info()
+    try:
+        if api_key:
+            etis_tool = EtisTool(session_id)
+            etis_tool.student_info()
+            result = {'status' : 'done'}
+    except ValueError:
+        result = {
+            'error_code' : 1,
+            'error_description' : 'wrong session'
+        }
 
     return JsonResponse(result)
 
@@ -53,9 +72,15 @@ def return_week_period(request, session_id, api_key):
         'error_code': 0,
         'error_description': 'wrong api key'
     }
-    if api_key:
-        etis_tool = EtisTool(session_id)
-        result = etis_tool.week_periods()
+    try:
+        if api_key:
+            etis_tool = EtisTool(session_id)
+            result = etis_tool.week_periods()
+    except ValueError:
+        result = {
+            'error_code' : 1,
+            'error_description' : 'wrong session'
+        }
 
     return JsonResponse(result)
 

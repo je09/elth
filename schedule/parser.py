@@ -3,6 +3,7 @@ from string import digits
 
 import requests
 from bs4 import BeautifulSoup
+from django.conf import settings
 
 from .models import Lesson, Lesson_Timing, Lesson_Name, Group, Student, Week_Period, Lesson_Choiced_Name, Lesson_Choiced
 
@@ -16,6 +17,15 @@ WEEKDAY = {
         'Четверг': 'thu',
         'Пятница': 'fri',
         'Суббота': 'sat',
+    }
+
+WEEKDAY_ID = {
+        'mon': 1,
+        'tue': 2,
+        'wed': 3,
+        'thu': 4,
+        'fri': 5,
+        'sat': 6,
     }
 
 WEEKDAY_REVERSE = {
@@ -382,7 +392,8 @@ class EtisTool:
             'missing_classes' : missing_classes
         }
 
-        return result
+        with open(settings.BASE_DIR + '/static/student_info.json', 'w', encoding='utf-8') as student_file:
+            student_file.writelines(result)
 
     def return_week(self, week_number, formated=False):
         group_model = Group.objects.get(group_id=int(self.parser.student.group))
@@ -405,23 +416,25 @@ class EtisTool:
                 )
 
         if formated:
-            for day in objects:
-                result.append(
-                    {
-                        'title' : '{0}, {1} {2}'.format(
-                            WEEKDAY_REVERSE[day.weekday],
-                            str(day.date).split('-')[2],
-                            MONTH_REVERSE[int(str(day.date).split('-')[1])]
-                        ),
-                        'date' : day.date,
-                        'name' : day.name.lesson_name,
-                        'time' : str(day.time),
-                        'weekday': day.weekday,
-                        'teacher_name' : day.teacher_name,
-                        'number' : day.number,
-                        'audience' : day.audience,
-                    }
-                )
+            for day in WEEKDAY_ID:
+                objects = Lesson.objects.filter(week=week_number, group=group_model, weekday=day)
+                for lesson in objects:
+                    result.append(
+                        {
+                            'title' : '{0}, {1} {2}'.format(
+                                WEEKDAY_REVERSE[day.weekday],
+                                str(day.date).split('-')[2],
+                                MONTH_REVERSE[int(str(day.date).split('-')[1])]
+                            ),
+                            'id' : WEEKDAY_ID[day.weekday],
+                            'pairs' : {
+                                'pair_title' : '{0} пара'.format(day.number),
+                                'pair_time' : day.time.start.strftime("%H:%M"),
+                                'pair_timeOut' : day.time.end.strftime("%H:%M"),
+
+                            }
+                        }
+                    )
 
         return result
 
