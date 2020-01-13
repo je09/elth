@@ -418,23 +418,39 @@ class EtisTool:
         if formated:
             for day in WEEKDAY_ID:
                 objects = Lesson.objects.filter(week=week_number, group=group_model, weekday=day)
-                for lesson in objects:
-                    result.append(
-                        {
-                            'title' : '{0}, {1} {2}'.format(
-                                WEEKDAY_REVERSE[day.weekday],
-                                str(day.date).split('-')[2],
-                                MONTH_REVERSE[int(str(day.date).split('-')[1])]
-                            ),
-                            'id' : WEEKDAY_ID[day.weekday],
-                            'pairs' : {
-                                'pair_title' : '{0} пара'.format(day.number),
-                                'pair_time' : day.time.start.strftime("%H:%M"),
-                                'pair_timeOut' : day.time.end.strftime("%H:%M"),
+                try:
+                    date_title = objects[0].date
+                except IndexError:
+                    date_title = date_title + timedelta(days=1)
 
-                            }
+                day_title = date_title.day
+                month_title = date_title.month
+
+                result.append(
+                    {
+                        'title' : '{0}, {1} {2}'.format(
+                                WEEKDAY_REVERSE[day],
+                                day_title,
+                                MONTH_REVERSE[month_title]
+                            ),
+                        'id': WEEKDAY_ID[date_title.strftime('%a').lower()],
+                        'pairs' : [],
+                    }
+                )
+                pairs = []
+                for lesson in objects:
+                    pairs.append(
+                        {
+                            'pair_title' : '{0} пара'.format(lesson.number),
+                            'pair_time' : lesson.time.start.strftime("%H:%M"),
+                            'pair_timeOut': lesson.time.end.strftime("%H:%M"),
+                            'pair_teacher': lesson.teacher_name,
+                            'pair_dis': lesson.name.lesson_name,
+                            'pair_aud': lesson.audience,
                         }
                     )
+                result[len(result)-1]['pairs'] = pairs
+                result[len(result)-1]['pairCount'] = len(pairs)
 
         return result
 
